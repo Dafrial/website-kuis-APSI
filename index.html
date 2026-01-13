@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>UAS APSI - Quiz Online</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+    <!-- Start Screen -->
+    <div id="startScreen" class="screen">
+        <div class="start-container">
+            <div class="logo">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+            <h1>UAS Analisis & Perancangan Sistem Informasi</h1>
+            <p class="subtitle">Quiz 2 - Soal Pilihan Ganda & Esai</p>
+            
+            <div class="exam-info">
+                <div class="info-item">
+                    <i class="fas fa-list-ol"></i>
+                    <span>55 Soal Pilihan Ganda</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-pen"></i>
+                    <span>15 Soal Esai</span>
+                </div>
+                <div class="info-item">
+                    <i class="fas fa-lightbulb"></i>
+                    <span>Mode Belajar</span>
+                </div>
+            </div>
+
+            <div class="student-form">
+                <div class="form-group">
+                    <label for="studentName"><i class="fas fa-user"></i> Nama Lengkap</label>
+                    <input type="text" id="studentName" placeholder="Masukkan nama lengkap" required>
+                </div>
+                <div class="form-group">
+                    <label for="studentNIM"><i class="fas fa-id-card"></i> NIM</label>
+                    <input type="text" id="studentNIM" placeholder="Masukkan NIM" required>
+                </div>
+            </div>
+
+            <button id="startBtn" class="btn-primary">
+                <i class="fas fa-play"></i> Mulai Ujian
+            </button>
+        </div>
+    </div>
+
+    <!-- Quiz Screen -->
+    <div id="quizScreen" class="screen hidden">
+        <header class="quiz-header">
+            <div class="header-left">
+                <h2><i class="fas fa-book"></i> UAS APSI</h2>
+                <span id="studentInfo"></span>
+            </div>
+            <div class="header-right">
+                <span class="mode-label"><i class="fas fa-graduation-cap"></i> Mode Belajar</span>
+            </div>
+        </header>
+
+        <div class="quiz-container">
+            <div class="quiz-sidebar">
+                <div class="progress-info">
+                    <h3>Progress</h3>
+                    <div class="progress-bar">
+                        <div class="progress-fill" id="progressFill"></div>
+                    </div>
+                    <p><span id="answeredCount">0</span> / <span id="totalQuestions">70</span> dijawab</p>
+                </div>
+                
+                <div class="section-tabs">
+                    <button class="tab-btn active" data-section="pg">
+                        <i class="fas fa-list-ol"></i> Pilihan Ganda
+                    </button>
+                    <button class="tab-btn" data-section="essay">
+                        <i class="fas fa-pen"></i> Esai
+                    </button>
+                </div>
+
+                <div class="question-nav" id="questionNav">
+                    <!-- Question numbers will be generated here -->
+                </div>
+            </div>
+
+            <div class="quiz-main">
+                <div class="question-container" id="questionContainer">
+                    <!-- Questions will be loaded here -->
+                </div>
+
+                <div class="navigation-buttons">
+                    <button id="prevBtn" class="btn-nav" disabled>
+                        <i class="fas fa-chevron-left"></i> Sebelumnya
+                    </button>
+                    <button id="nextBtn" class="btn-nav">
+                        Selanjutnya <i class="fas fa-chevron-right"></i>
+                    </button>
+                    <button id="submitBtn" class="btn-submit hidden">
+                        <i class="fas fa-paper-plane"></i> Kumpulkan Jawaban
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Result Screen -->
+    <div id="resultScreen" class="screen hidden">
+        <div class="result-container">
+            <div class="result-header">
+                <div class="result-icon" id="resultIcon">
+                    <i class="fas fa-trophy"></i>
+                </div>
+                <h1>Hasil Ujian</h1>
+                <p id="resultStudentInfo"></p>
+            </div>
+
+            <div class="score-cards">
+                <div class="score-card">
+                    <div class="score-icon pg">
+                        <i class="fas fa-list-ol"></i>
+                    </div>
+                    <h3>Pilihan Ganda</h3>
+                    <p class="score" id="pgScore">0/55</p>
+                    <p class="percentage" id="pgPercentage">0%</p>
+                </div>
+                <div class="score-card">
+                    <div class="score-icon essay">
+                        <i class="fas fa-pen"></i>
+                    </div>
+                    <h3>Esai</h3>
+                    <p class="score" id="essayScore">0/15 dijawab</p>
+                    <p class="percentage" id="essayPercentage">Skor keyword: 0%</p>
+                </div>
+                <div class="score-card total">
+                    <div class="score-icon total">
+                        <i class="fas fa-star"></i>
+                    </div>
+                    <h3>Nilai PG</h3>
+                    <p class="score big" id="totalScore">0</p>
+                    <p class="percentage">dari 100</p>
+                </div>
+            </div>
+
+            <div class="result-actions">
+                <button id="reviewBtn" class="btn-secondary">
+                    <i class="fas fa-eye"></i> Lihat Pembahasan
+                </button>
+                <button id="retryBtn" class="btn-primary">
+                    <i class="fas fa-redo"></i> Ulangi Ujian
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Review Screen -->
+    <div id="reviewScreen" class="screen hidden">
+        <header class="review-header">
+            <h2><i class="fas fa-book-open"></i> Pembahasan Jawaban</h2>
+            <button id="backToResultBtn" class="btn-secondary">
+                <i class="fas fa-arrow-left"></i> Kembali ke Hasil
+            </button>
+        </header>
+
+        <div class="review-container" id="reviewContainer">
+            <!-- Review content will be generated here -->
+        </div>
+    </div>
+
+    <script src="questions.js"></script>
+    <script src="script.js"></script>
+</body>
+</html>
