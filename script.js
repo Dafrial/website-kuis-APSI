@@ -11,11 +11,34 @@ class QuizApp {
         this.studentName = '';
         this.studentNIM = '';
         
+        // Shuffled questions arrays
+        this.shuffledPG = [];
+        this.shuffledEssay = [];
+        
         this.init();
     }
 
     init() {
+        // Shuffle questions on page load
+        this.shuffleQuestions();
         this.bindEvents();
+    }
+
+    // Fisher-Yates shuffle algorithm
+    shuffleArray(array) {
+        const shuffled = [...array]; // Create a copy
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
+        }
+        return shuffled;
+    }
+
+    shuffleQuestions() {
+        // Shuffle both PG and Essay questions
+        this.shuffledPG = this.shuffleArray(multipleChoiceQuestions);
+        this.shuffledEssay = this.shuffleArray(essayQuestions);
+        console.log('Soal telah diacak!');
     }
 
     bindEvents() {
@@ -80,7 +103,7 @@ class QuizApp {
         const pgGrid = document.createElement('div');
         pgGrid.className = 'nav-grid';
         
-        for (let i = 0; i < multipleChoiceQuestions.length; i++) {
+        for (let i = 0; i < this.shuffledPG.length; i++) {
             const btn = document.createElement('button');
             btn.className = 'nav-btn';
             btn.textContent = i + 1;
@@ -141,7 +164,7 @@ class QuizApp {
 
     loadQuestion() {
         const container = document.getElementById('questionContainer');
-        const questions = this.currentSection === 'pg' ? multipleChoiceQuestions : essayQuestions;
+        const questions = this.currentSection === 'pg' ? this.shuffledPG : this.shuffledEssay;
         const question = questions[this.currentQuestionIndex];
         const totalQuestions = questions.length;
 
@@ -277,7 +300,7 @@ class QuizApp {
     }
 
     selectOption(index) {
-        const question = multipleChoiceQuestions[this.currentQuestionIndex];
+        const question = this.shuffledPG[this.currentQuestionIndex];
         
         // Check if already answered
         if (this.answeredPG[question.id] !== undefined) {
@@ -295,7 +318,7 @@ class QuizApp {
     }
 
     saveEssayAnswer() {
-        const question = essayQuestions[this.currentQuestionIndex];
+        const question = this.shuffledEssay[this.currentQuestionIndex];
         const textarea = document.getElementById('essayAnswer');
         if (!textarea) return;
         
@@ -361,7 +384,7 @@ class QuizApp {
     }
 
     navigateQuestion(direction) {
-        const questions = this.currentSection === 'pg' ? multipleChoiceQuestions : essayQuestions;
+        const questions = this.currentSection === 'pg' ? this.shuffledPG : this.shuffledEssay;
         const newIndex = this.currentQuestionIndex + direction;
 
         if (newIndex >= 0 && newIndex < questions.length) {
@@ -374,7 +397,7 @@ class QuizApp {
         } else if (direction < 0 && this.currentSection === 'essay' && this.currentQuestionIndex === 0) {
             // Move back to last PG question
             this.currentSection = 'pg';
-            this.currentQuestionIndex = multipleChoiceQuestions.length - 1;
+            this.currentQuestionIndex = this.shuffledPG.length - 1;
             document.querySelectorAll('.tab-btn').forEach(btn => {
                 btn.classList.toggle('active', btn.dataset.section === 'pg');
             });
@@ -408,8 +431,8 @@ class QuizApp {
     updateNavHighlight() {
         // Update PG nav
         document.querySelectorAll('#pgNav .nav-btn').forEach((btn, idx) => {
-            const questionId = multipleChoiceQuestions[idx].id;
-            const question = multipleChoiceQuestions[idx];
+            const questionId = this.shuffledPG[idx].id;
+            const question = this.shuffledPG[idx];
             btn.classList.remove('current', 'answered', 'correct', 'wrong');
             
             if (this.currentSection === 'pg' && idx === this.currentQuestionIndex) {
@@ -428,7 +451,7 @@ class QuizApp {
 
         // Update Essay nav
         document.querySelectorAll('#essayNav .nav-btn').forEach((btn, idx) => {
-            const questionId = essayQuestions[idx].id;
+            const questionId = this.shuffledEssay[idx].id;
             btn.classList.remove('current', 'answered');
             
             if (this.currentSection === 'essay' && idx === this.currentQuestionIndex) {
@@ -443,7 +466,7 @@ class QuizApp {
     updateProgress() {
         const pgAnswered = Object.keys(this.answeredPG).length;
         const essayAnswered = Object.keys(this.userAnswers.essay).length;
-        const total = multipleChoiceQuestions.length + essayQuestions.length;
+        const total = this.shuffledPG.length + this.shuffledEssay.length;
         const answered = pgAnswered + essayAnswered;
 
         document.getElementById('answeredCount').textContent = answered;
@@ -454,8 +477,8 @@ class QuizApp {
     showSubmitConfirmation() {
         const pgAnswered = Object.keys(this.answeredPG).length;
         const essayAnswered = Object.keys(this.userAnswers.essay).length;
-        const pgUnanswered = multipleChoiceQuestions.length - pgAnswered;
-        const essayUnanswered = essayQuestions.length - essayAnswered;
+        const pgUnanswered = this.shuffledPG.length - pgAnswered;
+        const essayUnanswered = this.shuffledEssay.length - essayAnswered;
 
         let message = 'Apakah Anda yakin ingin mengumpulkan jawaban?';
         
@@ -471,7 +494,7 @@ class QuizApp {
     submitQuiz() {
         // Calculate PG score
         let pgCorrect = 0;
-        multipleChoiceQuestions.forEach(q => {
+        this.shuffledPG.forEach(q => {
             if (this.userAnswers.pg[q.id] === q.correctAnswer) {
                 pgCorrect++;
             }
@@ -480,16 +503,16 @@ class QuizApp {
         // Calculate Essay score based on keywords
         let totalEssayKeywordScore = 0;
         let essayAnswered = 0;
-        essayQuestions.forEach(q => {
+        this.shuffledEssay.forEach(q => {
             if (this.userAnswers.essay[q.id]) {
                 essayAnswered++;
                 const result = this.checkKeywords(this.userAnswers.essay[q.id], q.keywords);
                 totalEssayKeywordScore += result.percentage;
             }
         });
-        const avgEssayScore = essayAnswered > 0 ? Math.round(totalEssayKeywordScore / essayQuestions.length) : 0;
+        const avgEssayScore = essayAnswered > 0 ? Math.round(totalEssayKeywordScore / this.shuffledEssay.length) : 0;
 
-        const pgPercentage = Math.round((pgCorrect / multipleChoiceQuestions.length) * 100);
+        const pgPercentage = Math.round((pgCorrect / this.shuffledPG.length) * 100);
         
         // Combined score: 60% PG + 40% Essay
         const totalScore = Math.round((pgPercentage * 0.6) + (avgEssayScore * 0.4));
@@ -500,9 +523,9 @@ class QuizApp {
 
         // Update result display
         document.getElementById('resultStudentInfo').textContent = `${this.studentName} (${this.studentNIM})`;
-        document.getElementById('pgScore').textContent = `${pgCorrect}/${multipleChoiceQuestions.length}`;
+        document.getElementById('pgScore').textContent = `${pgCorrect}/${this.shuffledPG.length}`;
         document.getElementById('pgPercentage').textContent = `${pgPercentage}%`;
-        document.getElementById('essayScore').textContent = `${essayAnswered}/${essayQuestions.length} dijawab`;
+        document.getElementById('essayScore').textContent = `${essayAnswered}/${this.shuffledEssay.length} dijawab`;
         document.getElementById('essayPercentage').textContent = `Skor keyword: ${avgEssayScore}%`;
         document.getElementById('totalScore').textContent = totalScore;
 
@@ -527,7 +550,7 @@ class QuizApp {
         // PG Review
         container.innerHTML += '<h2 class="review-section-title"><i class="fas fa-list-ol"></i> Pilihan Ganda</h2>';
         
-        multipleChoiceQuestions.forEach((q, idx) => {
+        this.shuffledPG.forEach((q, idx) => {
             const userAnswer = this.userAnswers.pg[q.id];
             const isCorrect = userAnswer === q.correctAnswer;
             
@@ -569,7 +592,7 @@ class QuizApp {
         // Essay Review
         container.innerHTML += '<h2 class="review-section-title"><i class="fas fa-pen"></i> Esai</h2>';
         
-        essayQuestions.forEach((q, idx) => {
+        this.shuffledEssay.forEach((q, idx) => {
             const userAnswer = this.userAnswers.essay[q.id] || '(Tidak dijawab)';
             const keywordResult = this.userAnswers.essay[q.id] ? this.checkKeywords(userAnswer, q.keywords) : null;
             
@@ -616,6 +639,9 @@ class QuizApp {
         this.currentQuestionIndex = 0;
         this.userAnswers = { pg: {}, essay: {} };
         this.answeredPG = {};
+        
+        // Shuffle questions again for new attempt
+        this.shuffleQuestions();
         
         // Reset UI
         document.getElementById('studentName').value = '';
