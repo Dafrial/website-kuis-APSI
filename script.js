@@ -212,25 +212,38 @@ class QuizApp {
                               oninput="quiz.saveEssayAnswer()">${userAnswer}</textarea>
                     <p class="essay-hint"><i class="fas fa-info-circle"></i> Jawaban akan tersimpan dan dinilai otomatis berdasarkan kata kunci</p>
                     
-                    ${keywordResult ? `
-                        <div class="keyword-score-container">
-                            <div class="keyword-score-header">
-                                <span><i class="fas fa-key"></i> Skor Kata Kunci</span>
-                                <span class="keyword-percentage ${keywordResult.percentage >= 70 ? 'good' : keywordResult.percentage >= 40 ? 'medium' : 'low'}">${keywordResult.percentage}%</span>
-                            </div>
-                            <div class="keyword-progress">
-                                <div class="keyword-progress-fill" style="width: ${keywordResult.percentage}%"></div>
-                            </div>
-                            <div class="keyword-details">
-                                <p><strong>Kata kunci ditemukan (${keywordResult.found.length}/${question.keywords.length}):</strong></p>
-                                <div class="keyword-tags">
-                                    ${question.keywords.map(kw => `
-                                        <span class="keyword-tag ${keywordResult.found.includes(kw.toLowerCase()) ? 'found' : 'missing'}">${kw}</span>
-                                    `).join('')}
+                    <div id="keywordScoreArea">
+                        ${keywordResult ? `
+                            <div class="keyword-score-container">
+                                <div class="keyword-score-header">
+                                    <span><i class="fas fa-key"></i> Skor Kata Kunci</span>
+                                    <span class="keyword-percentage ${keywordResult.percentage >= 70 ? 'good' : keywordResult.percentage >= 40 ? 'medium' : 'low'}">${keywordResult.percentage}%</span>
+                                </div>
+                                <div class="keyword-progress">
+                                    <div class="keyword-progress-fill" style="width: ${keywordResult.percentage}%"></div>
+                                </div>
+                                <div class="keyword-details">
+                                    <p><strong>Kata kunci ditemukan (${keywordResult.found.length}/${question.keywords.length}):</strong></p>
+                                    <div class="keyword-tags">
+                                        ${question.keywords.map(kw => `
+                                            <span class="keyword-tag ${keywordResult.found.includes(kw.toLowerCase()) ? 'found' : 'missing'}">${kw}</span>
+                                        `).join('')}
+                                    </div>
                                 </div>
                             </div>
+                        ` : ''}
+                    </div>
+                    
+                    <!-- Show/Hide Answer Section -->
+                    <div class="answer-section">
+                        <button class="toggle-answer-btn" id="toggleAnswerBtn" onclick="quiz.toggleAnswer()">
+                            <i class="fas fa-eye"></i> Lihat Jawaban
+                        </button>
+                        <div class="answer-box hidden" id="answerBox">
+                            <div class="answer-label"><i class="fas fa-lightbulb"></i> Jawaban Singkat:</div>
+                            <div class="answer-content">${question.shortAnswer || this.generateShortAnswer(question)}</div>
                         </div>
-                    ` : ''}
+                    </div>
                 </div>
             `;
         }
@@ -258,6 +271,11 @@ class QuizApp {
         };
     }
 
+    generateShortAnswer(question) {
+        // Fallback if shortAnswer not defined - use keywords to create a simple answer
+        return `<strong>Kata kunci penting:</strong> ${question.keywords.slice(0, 6).join(', ')}`;
+    }
+
     selectOption(index) {
         const question = multipleChoiceQuestions[this.currentQuestionIndex];
         
@@ -278,7 +296,10 @@ class QuizApp {
 
     saveEssayAnswer() {
         const question = essayQuestions[this.currentQuestionIndex];
-        const answer = document.getElementById('essayAnswer').value.trim();
+        const textarea = document.getElementById('essayAnswer');
+        if (!textarea) return;
+        
+        const answer = textarea.value.trim();
         
         if (answer) {
             this.userAnswers.essay[question.id] = answer;
@@ -286,14 +307,57 @@ class QuizApp {
             delete this.userAnswers.essay[question.id];
         }
 
-        // Reload to update keyword score
+        // Update keyword score without reloading the entire question
         clearTimeout(this.essayTimeout);
         this.essayTimeout = setTimeout(() => {
-            this.loadQuestion();
+            this.updateKeywordScore(question, answer);
         }, 500);
 
         this.updateNavHighlight();
         this.updateProgress();
+    }
+
+    updateKeywordScore(question, answer) {
+        const container = document.getElementById('keywordScoreArea');
+        if (!container) return;
+        
+        if (answer) {
+            const keywordResult = this.checkKeywords(answer, question.keywords);
+            container.innerHTML = `
+                <div class="keyword-score-container">
+                    <div class="keyword-score-header">
+                        <span><i class="fas fa-key"></i> Skor Kata Kunci</span>
+                        <span class="keyword-percentage ${keywordResult.percentage >= 70 ? 'good' : keywordResult.percentage >= 40 ? 'medium' : 'low'}">${keywordResult.percentage}%</span>
+                    </div>
+                    <div class="keyword-progress">
+                        <div class="keyword-progress-fill" style="width: ${keywordResult.percentage}%"></div>
+                    </div>
+                    <div class="keyword-details">
+                        <p><strong>Kata kunci ditemukan (${keywordResult.found.length}/${question.keywords.length}):</strong></p>
+                        <div class="keyword-tags">
+                            ${question.keywords.map(kw => `
+                                <span class="keyword-tag ${keywordResult.found.includes(kw.toLowerCase()) ? 'found' : 'missing'}">${kw}</span>
+                            `).join('')}
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else {
+            container.innerHTML = '';
+        }
+    }
+
+    toggleAnswer() {
+        const answerBox = document.getElementById('answerBox');
+        const toggleBtn = document.getElementById('toggleAnswerBtn');
+        if (answerBox && toggleBtn) {
+            answerBox.classList.toggle('hidden');
+            if (answerBox.classList.contains('hidden')) {
+                toggleBtn.innerHTML = '<i class="fas fa-eye"></i> Lihat Jawaban';
+            } else {
+                toggleBtn.innerHTML = '<i class="fas fa-eye-slash"></i> Sembunyikan Jawaban';
+            }
+        }
     }
 
     navigateQuestion(direction) {
