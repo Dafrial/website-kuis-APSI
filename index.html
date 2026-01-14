@@ -9,56 +9,15 @@
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
-    <!-- Start Screen -->
-    <div id="startScreen" class="screen">
-        <div class="start-container">
-            <div class="logo">
-                <i class="fas fa-graduation-cap"></i>
-            </div>
-            <h1>UAS Analisis & Perancangan Sistem Informasi</h1>
-            <p class="subtitle">Quiz 2 - Soal Pilihan Ganda & Esai</p>
-            
-            <div class="exam-info">
-                <div class="info-item">
-                    <i class="fas fa-list-ol"></i>
-                    <span>55 Soal Pilihan Ganda</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-pen"></i>
-                    <span>15 Soal Esai</span>
-                </div>
-                <div class="info-item">
-                    <i class="fas fa-lightbulb"></i>
-                    <span>Mode Belajar</span>
-                </div>
-            </div>
-
-            <div class="student-form">
-                <div class="form-group">
-                    <label for="studentName"><i class="fas fa-user"></i> Nama Lengkap</label>
-                    <input type="text" id="studentName" placeholder="Masukkan nama lengkap" required>
-                </div>
-                <div class="form-group">
-                    <label for="studentNIM"><i class="fas fa-id-card"></i> NIM</label>
-                    <input type="text" id="studentNIM" placeholder="Masukkan NIM" required>
-                </div>
-            </div>
-
-            <button id="startBtn" class="btn-primary">
-                <i class="fas fa-play"></i> Mulai Ujian
-            </button>
-        </div>
-    </div>
-
-    <!-- Quiz Screen -->
-    <div id="quizScreen" class="screen hidden">
+    <!-- Quiz Screen - Now shown directly -->
+    <div id="quizScreen" class="screen">
         <header class="quiz-header">
             <div class="header-left">
                 <h2><i class="fas fa-book"></i> UAS APSI</h2>
-                <span id="studentInfo"></span>
+                <span id="studentInfo">Mode Belajar</span>
             </div>
             <div class="header-right">
-                <span class="mode-label"><i class="fas fa-graduation-cap"></i> Mode Belajar</span>
+                <span class="mode-label"><i class="fas fa-graduation-cap"></i> Quiz 2</span>
             </div>
         </header>
 

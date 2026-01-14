@@ -8,8 +8,6 @@ class QuizApp {
             essay: {}
         };
         this.answeredPG = {}; // Track which PG questions have been answered (locked)
-        this.studentName = '';
-        this.studentNIM = '';
         
         // Shuffled questions arrays
         this.shuffledPG = [];
@@ -22,6 +20,8 @@ class QuizApp {
         // Shuffle questions on page load
         this.shuffleQuestions();
         this.bindEvents();
+        // Start quiz immediately
+        this.startQuiz();
     }
 
     // Fisher-Yates shuffle algorithm
@@ -38,13 +38,10 @@ class QuizApp {
         // Shuffle both PG and Essay questions
         this.shuffledPG = this.shuffleArray(multipleChoiceQuestions);
         this.shuffledEssay = this.shuffleArray(essayQuestions);
-        console.log('Soal telah diacak!');
+        console.log('Soal telah diacak! PG pertama:', this.shuffledPG[0].id, 'Essay pertama:', this.shuffledEssay[0].id);
     }
 
     bindEvents() {
-        // Start button
-        document.getElementById('startBtn').addEventListener('click', () => this.startQuiz());
-        
         // Navigation buttons
         document.getElementById('prevBtn').addEventListener('click', () => this.navigateQuestion(-1));
         document.getElementById('nextBtn').addEventListener('click', () => this.navigateQuestion(1));
@@ -59,37 +56,15 @@ class QuizApp {
         document.getElementById('reviewBtn').addEventListener('click', () => this.showReview());
         document.getElementById('retryBtn').addEventListener('click', () => this.resetQuiz());
         document.getElementById('backToResultBtn').addEventListener('click', () => this.backToResult());
-
-        // Enter key on form
-        document.getElementById('studentName').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') document.getElementById('studentNIM').focus();
-        });
-        document.getElementById('studentNIM').addEventListener('keypress', (e) => {
-            if (e.key === 'Enter') this.startQuiz();
-        });
     }
 
     startQuiz() {
-        this.studentName = document.getElementById('studentName').value.trim();
-        this.studentNIM = document.getElementById('studentNIM').value.trim();
-
-        if (!this.studentName || !this.studentNIM) {
-            alert('Mohon isi nama dan NIM terlebih dahulu!');
-            return;
-        }
-
-        // Hide start screen, show quiz screen
-        document.getElementById('startScreen').classList.add('hidden');
-        document.getElementById('quizScreen').classList.remove('hidden');
-
-        // Set student info
-        document.getElementById('studentInfo').textContent = `${this.studentName} (${this.studentNIM})`;
-
         // Generate question navigation
         this.generateQuestionNav();
 
         // Load first question
         this.loadQuestion();
+        this.updateProgress();
     }
 
     generateQuestionNav() {
@@ -522,7 +497,7 @@ class QuizApp {
         document.getElementById('resultScreen').classList.remove('hidden');
 
         // Update result display
-        document.getElementById('resultStudentInfo').textContent = `${this.studentName} (${this.studentNIM})`;
+        document.getElementById('resultStudentInfo').textContent = 'Hasil Ujian Anda';
         document.getElementById('pgScore').textContent = `${pgCorrect}/${this.shuffledPG.length}`;
         document.getElementById('pgPercentage').textContent = `${pgPercentage}%`;
         document.getElementById('essayScore').textContent = `${essayAnswered}/${this.shuffledEssay.length} dijawab`;
@@ -643,15 +618,22 @@ class QuizApp {
         // Shuffle questions again for new attempt
         this.shuffleQuestions();
         
-        // Reset UI
-        document.getElementById('studentName').value = '';
-        document.getElementById('studentNIM').value = '';
-        
-        // Show start screen
+        // Hide result/review screens, show quiz screen
         document.getElementById('resultScreen').classList.add('hidden');
         document.getElementById('reviewScreen').classList.add('hidden');
-        document.getElementById('quizScreen').classList.add('hidden');
-        document.getElementById('startScreen').classList.remove('hidden');
+        document.getElementById('quizScreen').classList.remove('hidden');
+        
+        // Regenerate navigation and load first question
+        this.generateQuestionNav();
+        this.loadQuestion();
+        this.updateProgress();
+        
+        // Reset tabs to PG
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.classList.toggle('active', btn.dataset.section === 'pg');
+        });
+        document.getElementById('pgNav').style.display = 'block';
+        document.getElementById('essayNav').style.display = 'none';
     }
 }
 
